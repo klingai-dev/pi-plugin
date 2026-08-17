@@ -1,0 +1,22 @@
+{
+  "settings": {
+    "autoAuth": false,
+    "directTools": false,
+    "hostConfigDiscovery": "off",
+    "sampling": false
+  },
+  "mcpServers": {
+    "Plugin-Pi-kling-ai": {
+      "url": "https://kling.ai/mcp",
+      "auth": "oauth",
+      "oauth": {
+        "clientName": "Plugin-Pi",
+        "scope": "generation.create generation.read account.credit.read"
+      },
+      "headers": {
+        "X-Kling-Integration": "Plugin-Pi"
+      },
+      "lifecycle": "lazy"
+    }
+  }
+}
