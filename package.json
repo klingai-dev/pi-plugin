@@ -1,6 +1,6 @@
 {
   "name": "kling-ai-pi",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "type": "module",
   "description": "Kling AI package for Pi with OAuth, MCP Apps, and China/Global regions",
   "license": "MIT",
@@ -49,7 +49,7 @@
     "README.md",
     "docs/RELEASE_CHECKLIST.md",
     "extensions",
-    "mcp.json",
+    "mcp.china.json",
     "mcp.global.json",
     "scripts/check.mjs",
     "skills"

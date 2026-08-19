@@ -1,7 +1,9 @@
-# Pi MCP workflow
+# Remote tool workflow
 
-1. Run `/kling-region` when the active region is unclear, then use `mcp({ server: "<active-server-key>" })` or `mcp({ search: "kling image video upload task credit" })` to inspect the live catalog.
-2. Use `mcp({ describe: "<tool>" })` before preparing arguments. Do not infer current model names or enums from this file.
-3. For media inputs, call the discovered upload tool first and preserve its returned reference.
-4. After the user confirms final billable settings, call `mcp({ tool: "<generation-tool>", args: { ... } })` exactly once.
-5. Preserve `generationId` and `taskTraceId`. On ambiguity, search for and call `query_tasks` instead of resubmitting.
+1. Run `/kling-region` when the active region is unclear. Inspect remote `Plugin-Pi-kling-ai` through Pi's `mcp` proxy, then call `who_am_i` and use only the target model's declared arguments, defaults, allowed values, and media inputs.
+2. For attached media, call the remote upload tool and pass its returned reference to the generation request.
+3. Once materially missing inputs are resolved, treat complete final settings plus explicit immediate-submission intent as authorization; otherwise show the final settings and obtain explicit confirmation. Then call the selected remote generation tool once with `{model, arguments[], inputs[], rationale, taskTraceId}` and preserve its `generationId`. Reuse one UUIDv7 `taskTraceId` throughout the objective. Do not add a separate credit warning.
+4. If submission is not terminal, poll with the status tool declared by the live schema at provider-allowed intervals until success or failure. On user cancellation or current-turn timeout, return the state and task number.
+5. Let `pi-mcp-adapter` render a returned MCP App resource without duplicating its media. If Pi cannot mount it, present the text fallback and one primary output link when complete.
+
+Never retry a generation automatically.

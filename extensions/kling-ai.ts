@@ -8,7 +8,7 @@ import { inspectMcpOAuthTokensForUrl } from "pi-mcp-adapter/oauth";
 export type KlingRegion = "china" | "global";
 
 const regionConfig: Record<KlingRegion, { configFile: string; server: string }> = {
-  china: { configFile: "../mcp.json", server: "Plugin-Pi-kling-ai" },
+  china: { configFile: "../mcp.china.json", server: "Plugin-Pi-kling-ai" },
   global: { configFile: "../mcp.global.json", server: "Plugin-Pi-kling-ai" },
 };
 
