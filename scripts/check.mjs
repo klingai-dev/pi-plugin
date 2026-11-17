@@ -26,14 +26,14 @@ const regions = [
   {
     name: "china",
     config: chinaConfig,
-    serverName: "Plugin-Pi-kling-ai",
-    url: "https://klingai.com/mcp",
+    serverName: "kling-ai",
+    url: "https://klingai.com/mcp/plugin",
   },
   {
     name: "global",
     config: globalConfig,
-    serverName: "Plugin-Pi-kling-ai",
-    url: "https://kling.ai/mcp",
+    serverName: "kling-ai",
+    url: "https://kling.ai/mcp/plugin",
   },
 ];
 
@@ -43,7 +43,7 @@ if (packageJson.pi?.extensions?.[0] !== "./extensions/kling-ai.ts") {
 if (!packageJson.pi?.skills?.includes("./skills")) {
   throw new Error("Pi package must expose its Skills directory");
 }
-if (packageJson.dependencies?.["pi-mcp-adapter"] !== "2.26.0") {
+if (packageJson.dependencies?.["pi-mcp-adapter"] !== "2.27.0") {
   throw new Error("pi-mcp-adapter must stay pinned to the verified OAuth/MCP Apps version");
 }
 if (packageJson.peerDependencies?.["@earendil-works/pi-coding-agent"] !== "*") {
@@ -102,6 +102,8 @@ for (const phrase of [
   "at most once",
   "generationId",
   "MCP App resource",
+  "terminal-success result",
+  "only media preview",
   "/kling-region",
   "kling-ai-generate-image",
   "kling-ai-generate-video",

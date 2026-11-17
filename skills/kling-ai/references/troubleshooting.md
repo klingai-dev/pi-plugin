@@ -3,14 +3,14 @@
 ## MCP tools are missing after installation
 
 Run `/kling-region`, reload Pi with `/reload`, and confirm that exactly one
-`Plugin-Pi-kling-ai` server appears in `/mcp`. Then run `/mcp reconnect
-Plugin-Pi-kling-ai`. Do not ask for an API key as a workaround.
+`kling-ai` server appears in `/mcp`. Then run `/mcp reconnect kling-ai`.
+Do not ask for an API key as a workaround.
 
 ## Not authorized or not linked
 
-Run `/kling-region` to verify the selected account region, then run `/mcp-auth
-Plugin-Pi-kling-ai` and complete the browser OAuth flow. Use `/mcp logout
-Plugin-Pi-kling-ai` before an intentional account or region switch. If OAuth
+Run `/kling-region` to verify the selected account region, then run
+`/mcp-auth kling-ai` and complete the browser OAuth flow. Use
+`/mcp logout kling-ai` before an intentional account or region switch. If OAuth
 returns `invalid_target`, do not invent an `oauth_resource` override; report the
 Pi diagnostic and verify the current Kling protected-resource metadata.
 

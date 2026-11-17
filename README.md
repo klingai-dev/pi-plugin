@@ -28,6 +28,11 @@ Apps result rendering.
 
 No Kling API key is required.
 
+Version 1.0.6 uses the regional `/mcp/plugin` endpoints and requires a new
+OAuth login when upgrading from 1.0.5. See [Upgrade from 1.0.5](#upgrade-from-105).
+On Pi 1.x, this package provides `/mcp`. Pi may disable its built-in MCP
+extension when both would register that command.
+
 ## Quick start
 
 ### 1. Install and start Pi
@@ -58,13 +63,13 @@ a China account.
 Still inside Pi, run:
 
 ```text
-/mcp-auth Plugin-Pi-kling-ai
-/mcp reconnect Plugin-Pi-kling-ai
+/mcp-auth kling-ai
+/mcp reconnect kling-ai
 /mcp
 ```
 
 Complete the Kling sign-in and authorization in the browser. Setup is working
-when `/mcp` shows exactly one `Plugin-Pi-kling-ai` server connected for the
+when `/mcp` shows exactly one `kling-ai` server connected for the
 selected region.
 
 ### 4. Verify without spending credits
@@ -120,16 +125,16 @@ response remains authoritative for every model and enum.
 
 | Region | MCP endpoint | Pi server key |
 | --- | --- | --- |
-| Global (default) | `https://kling.ai/mcp` | `Plugin-Pi-kling-ai` |
-| China | `https://klingai.com/mcp` | `Plugin-Pi-kling-ai` |
+| Global (default) | `https://kling.ai/mcp/plugin` | `kling-ai` |
+| China | `https://klingai.com/mcp/plugin` | `kling-ai` |
 
 Finish or record any active generation IDs before changing regions. Then run:
 
 ```text
-/mcp logout Plugin-Pi-kling-ai
+/mcp logout kling-ai
 /kling-region china
-/mcp-auth Plugin-Pi-kling-ai
-/mcp reconnect Plugin-Pi-kling-ai
+/mcp-auth kling-ai
+/mcp reconnect kling-ai
 ```
 
 Replace `china` with `global` when switching back. The package never activates
@@ -137,6 +142,16 @@ both endpoints at once. Do not add either endpoint separately to `.mcp.json`.
 The packaged `mcp.global.json` and `mcp.china.json` files are internal templates,
 not user configuration. Do not copy or symlink them; `/kling-region` is the
 only authoritative way to inspect the active region.
+
+## Upgrade from 1.0.5
+
+Version 1.0.5 used `Plugin-Pi-kling-ai` at the parent `/mcp` URL. Version
+1.0.6 changes both the server key and URL to the shared plugin contract.
+Existing OAuth credentials are not transferable between those resource
+identities. Finish or record active task IDs and, while still running 1.0.5,
+use `/mcp logout Plugin-Pi-kling-ai`. Then update the package to 1.0.6, reload Pi, confirm
+`/kling-region`, and run `/mcp-auth kling-ai`. Never register the old and new
+connections together or paste credentials into chat.
 
 ## Troubleshooting
 
@@ -171,8 +186,8 @@ Inside Pi, run:
 
 ```text
 /kling-region
-/mcp-auth Plugin-Pi-kling-ai
-/mcp reconnect Plugin-Pi-kling-ai
+/mcp-auth kling-ai
+/mcp reconnect kling-ai
 /mcp
 ```
 

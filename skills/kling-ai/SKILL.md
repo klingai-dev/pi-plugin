@@ -5,22 +5,24 @@ description: Cinematic image & video generation via Kling AI in Pi. Supports T2I
 
 # Kling AI
 
-Use only the Kling MCP connection selected by `/kling-region`. New installations default to Global (`https://kling.ai/mcp`); China (`https://klingai.com/mcp`) is optional. Pi exposes exactly one active server as `Plugin-Pi-kling-ai` through `pi-mcp-adapter`.
+Use only the Kling MCP connection selected by `/kling-region`. New installations default to Global (`https://kling.ai/mcp/plugin`); China (`https://klingai.com/mcp/plugin`) is optional. Pi exposes exactly one active server as `kling-ai` through `pi-mcp-adapter`.
 
 ## Route specialized generation
 
 - Route text-to-image, image-to-image, posters, covers, product stills, and image concept requests to `kling-ai-generate-image`.
 - Route text-to-video, image-to-video, motion control, animation, camera motion, storyboards, and video concept requests to `kling-ai-generate-video`.
 - Keep OAuth, logout or account switching, uploads, the motion library, Element management, credit checks, cross-media requests, and task status in this Skill.
-- Route follow-ups on an existing output through the result workflow instead of creating a new generation.
+- Distinguish prompt-only planning, preparation for approval, submission, and an existing-task query. For prompt-only work or a missing required asset, return the plan or ask for the asset before querying the account.
+- For an existing task, query a known `generationId`.
 
 An attachment does not determine its own role. When the user has not said how to use attached media, ask whether it is a first frame, identity/product reference, editable source, or style inspiration before submission.
 
 ## Safety and submission contract
 
-- Use OAuth through Pi's `/mcp-auth Plugin-Pi-kling-ai` flow. Never ask for an API key or expose credentials, cookies, authorization headers, private account fields, or signed URLs in logs.
-- Treat generation as a credit-consuming write action. A request with complete final settings and explicit immediate-submission intent authorizes one submission; otherwise show the final workflow, model, duration/resolution or aspect ratio and obtain explicit confirmation immediately before submission. Do not add a separate credit-cost warning.
+- Use OAuth through Pi's `/mcp-auth kling-ai` flow. Never ask for an API key or expose credentials, cookies, authorization headers, private account fields, or signed URLs in logs.
+- Treat generation as a credit-consuming write action. Explicit immediate-submission intent authorizes one submission for complete, unchanged settings. Otherwise show the workflow, model, prompt summary, duration or resolution, aspect ratio, output count and reference roles before asking for confirmation. Include billing details required by the live model, including any input-video duration counted toward per-second billing.
 - Submit at most once per approved intent. Do not automatically retry failed or ambiguous submissions.
+- An accepted task is not a completed work. Claim completion only after a terminal-success result has at least one usable primary media URL; if work-level status exists it must be successful, and a video cover alone is not a completed video.
 - Discover the live remote tools and schemas at runtime; the provider schema overrides examples in this Skill.
 - Upload attached media with the remote upload tool before generation when required. Reuse the returned provider reference exactly as the live schema requires.
 - If submission returns a non-terminal state, poll with the status tool declared by the live schema at provider-allowed intervals until the task succeeds or fails. Stop only if the user cancels or the current turn times out; then return the current state and task number.
@@ -29,7 +31,7 @@ Read [the remote tool workflow](references/tool-workflows.md) and [the MCP input
 
 ## OAuth client identity and region
 
-The packaged adapter performs dynamic registration with `clientName: "Plugin-Pi"` and sends `X-Kling-Integration: Plugin-Pi` only to the active Kling origin. These are OAuth and integration metadata, not tool arguments, URL parameters, or secrets. `/kling-region` is the only authority for the active region: never infer it from template filenames, account metadata, membership/credit results, or files the agent read. Never copy or symlink the packaged regional templates into host configuration. Before switching, finish any accepted-task handoff, run `/mcp logout Plugin-Pi-kling-ai`, then use `/kling-region china|global` and authorize again.
+The packaged adapter performs dynamic registration with `clientName: "Plugin-Pi"` and sends `X-Kling-Integration: Plugin-Pi` only to the active Kling origin. These are OAuth and integration metadata, not tool arguments, URL parameters, or secrets. `/kling-region` is the only authority for the active region: never infer it from template filenames, account metadata, membership/credit results, or files the agent read. Never copy or symlink the packaged regional templates into host configuration. Before switching, finish any accepted-task handoff, run `/mcp logout kling-ai`, then use `/kling-region china|global` and authorize again.
 
 ## Workflow
 
@@ -40,7 +42,7 @@ The packaged adapter performs dynamic registration with `clientName: "Plugin-Pi"
 5. When the settings are authorized under the submission contract, call the selected remote generation tool exactly once.
 6. Preserve the exact `generationId` and any `taskTraceId` returned by the provider. Reuse one UUIDv7 `taskTraceId` throughout a single objective. Present `generationId` to the user as the **task number**.
 7. If the submission is not terminal, poll its status at provider-allowed intervals until success or failure. On user cancellation or current-turn timeout, return the current state and task number.
-8. Report the result returned by the remote tool. If it includes an MCP App resource, let `pi-mcp-adapter` render it and do not duplicate its media. If Pi cannot mount it, provide the text fallback and one link to the primary image or video when available.
+8. Report the result returned by the remote tool. If `pi-mcp-adapter` renders its MCP App resource, treat the App as the only media preview. Do not add Markdown image/video syntax, a separate media attachment or thumbnail, or a duplicate download link outside the App; add only a concise status sentence when needed. If Pi cannot mount the App, provide the text fallback and one link to the primary image or video when available.
 9. For a direct status request, call the live status tool once and report the current state; do not start a new long-running poll.
 10. Element deletion and logout/account switching mutate state. Call them only on an explicit user request and follow the tool's confirmation and reauthorization contract.
 
@@ -53,12 +55,12 @@ Use these only when the user did not specify alternatives and the live schema su
 - Video: use `1080p` for a normal deliverable; use `4k` when supported for high-quality, commercial, large-screen, or post-production work; use `720p` only for drafts, speed/cost-first work, or a mode that supports no higher value. Do not lower a higher live model default.
 - Video duration: use `5` seconds for one action or one shot; prefer `10` seconds for dialogue, singing, a complete product action, or two connected beats; use a longer supported duration only when the narrative needs it. Choose the shortest duration that can complete the idea instead of forcing every request into five seconds.
 - Text-to-video ratio: infer it from the destination: `9:16` for vertical shorts, `1:1` for square feeds, and `16:9` for landscape ads, web, or YouTube. Use `16:9` only when no destination context exists.
-- Image-to-video ratio: derive it from the first frame and omit the ratio unless the live tool requires it.
+- Image-to-video ratio: preserve first-frame composition by default. Pass an explicit requested ratio if the selected tool and model support it with a first frame.
 
 ## Failure behavior
 
-- Authorization failure: run `/kling-region` to verify the active region, direct the user to `/mcp-auth Plugin-Pi-kling-ai`, and retry only after authorization succeeds.
+- Authorization failure: run `/kling-region` to verify the active region, direct the user to `/mcp-auth kling-ai`, and retry only after authorization succeeds.
 - Invalid model or argument: refresh the live schema and revise only the unsupported field.
 - Provider task failure: explain the provider message and preserve the `generationId`; do not resubmit.
 - Insufficient credits: tell the user the balance is insufficient and ask them to recharge before trying again. Do not retry automatically.
-- Lost or timed-out submission response: treat task creation as unknown and query existing tasks before considering any new submission.
+- Lost or timed-out submission response: treat task creation as unknown. Query a known task ID or use a declared lookup if available. Preserve uncertainty and obtain fresh approval before any new submission.

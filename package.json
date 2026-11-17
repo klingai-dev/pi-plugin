@@ -1,6 +1,6 @@
 {
   "name": "kling-ai-pi",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "Kling AI package for Pi with OAuth, MCP Apps, and China/Global regions",
   "license": "MIT",
@@ -30,7 +30,7 @@
     "node": ">=22.19.0"
   },
   "dependencies": {
-    "pi-mcp-adapter": "2.26.0"
+    "pi-mcp-adapter": "2.27.0"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"

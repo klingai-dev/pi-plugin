@@ -7,10 +7,12 @@ description: Generate cinematic-quality images via Kling AI in Pi. Supports T2I 
 
 Turn a creative brief into one well-specified Kling image request. Use only the live tools and schemas from the Kling MCP connection selected by `/kling-region`.
 
+For a prompt or visual plan, return the requested text without starting account discovery. When an edit requires a missing source image, ask for it before preparing generation.
+
 ## Contract
 
-- Use Pi-managed OAuth through `/mcp-auth Plugin-Pi-kling-ai`. Never request or expose API keys, tokens, cookies, authorization headers, or signed URLs.
-- Treat generation as a credit-consuming write action. A request with complete final settings and explicit immediate-submission intent authorizes one submission; otherwise show the final image settings and obtain explicit confirmation immediately before submission. Do not add a separate credit-cost warning.
+- Use Pi-managed OAuth through `/mcp-auth kling-ai`. Never request or expose API keys, tokens, cookies, authorization headers, or signed URLs.
+- Treat generation as a credit-consuming write action. A request with complete final settings and explicit immediate-submission intent authorizes one submission; otherwise show the final image settings and obtain explicit confirmation immediately before submission. Include any billing disclosure required by the live model.
 - Submit once per approved intent. Never blind-retry an ambiguous or failed submission.
 - Discover the live schema before choosing tools, models, input names, or enumerated values. Live provider fields override examples here.
 - Upload attached reference media with the remote upload tool when required, then reuse the returned provider reference exactly.
@@ -24,10 +26,10 @@ Before submission, read the [complete MCP input/output and current model paramet
 3. Read [prompt construction](references/prompt-construction.md) when the brief is vague, has references, contains exact copy, or needs multiple controlled variants.
 4. Ask only for missing facts that materially change the result: subject/product, intended use, ratio, required copy, or mandatory reference identity.
 5. Among live models compatible with the mode and references, prefer a full-quality model. Prefer a low-cost or fast model only when the user explicitly asks for a draft, speed, or credit savings.
-6. Build one prompt that separates subject, action, environment, composition, lighting, palette, material detail, camera language, and exclusions. Translate abstract requests such as “premium,” “cinematic,” or “high quality” into visible lighting, materials, depth of field, color, and composition instead of stacking adjectives.
+6. Preserve a supplied prompt when it fits the brief. Otherwise revise only the requested parts or write a prompt that separates subject, action, environment, composition, lighting, palette, material detail, camera language, and exclusions. Translate abstract requests such as “premium,” “cinematic,” or “high quality” into visible lighting, materials, depth of field, color, and composition instead of stacking adjectives.
 7. Once the final settings are authorized under the submission contract, call the live image generation tool once. Preserve the exact `generationId` and any `taskTraceId`.
 8. If the submission is not terminal, poll its status at provider-allowed intervals until success or failure. On user cancellation or current-turn timeout, return the current state and task number.
-9. Let `pi-mcp-adapter` render a returned MCP App resource without duplicating its media. If Pi cannot mount it, provide the text fallback and one primary image or result link returned by Kling. Show `generationId` as the **task number** and keep `taskTraceId` internal unless troubleshooting requires it.
+9. When `pi-mcp-adapter` renders a returned MCP App resource, treat the App as the only media preview and do not add Markdown image/video syntax, a separate media attachment or thumbnail, or a duplicate download link outside it. If Pi cannot mount the App, provide the text fallback and one primary image link returned by Kling. Show `generationId` as the **task number** and keep `taskTraceId` internal unless troubleshooting requires it.
 
 ## Generation modes
 
@@ -61,8 +63,8 @@ Before submission, check that the brief has one clear focal subject, a readable 
 
 ## Failure behavior
 
-- Authorization failure: run `/kling-region`, then direct the user to `/mcp-auth Plugin-Pi-kling-ai`.
+- Authorization failure: run `/kling-region`, then direct the user to `/mcp-auth kling-ai`.
 - Unsupported argument: refresh the live schema and revise only the rejected field.
 - Insufficient credits: tell the user to recharge and stop. Do not retry automatically.
-- Lost response: treat task creation as unknown and query existing tasks before any new generation.
+- Lost response: follow the core Skill's unknown-submission workflow.
 - Provider failure: report the provider message and preserve IDs; do not resubmit automatically.

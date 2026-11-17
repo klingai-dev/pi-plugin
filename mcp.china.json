@@ -6,8 +6,8 @@
     "sampling": false
   },
   "mcpServers": {
-    "Plugin-Pi-kling-ai": {
-      "url": "https://klingai.com/mcp",
+    "kling-ai": {
+      "url": "https://klingai.com/mcp/plugin",
       "auth": "oauth",
       "oauth": {
         "clientName": "Plugin-Pi",

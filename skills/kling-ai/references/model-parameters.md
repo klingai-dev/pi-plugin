@@ -1,6 +1,6 @@
 # Global MCP current model parameter snapshot
 
-Audit date: 2026-08-19. Source: live `who_am_i.availableModels` from `https://kling.ai/mcp`.
+Audit date: 2026-08-19. Source: live `who_am_i.availableModels` from `https://kling.ai/mcp/plugin`.
 
 This is a complete verification snapshot, not a permanent source of truth. Call `who_am_i` again before submission and use current values when models, defaults, allowed values, required fields, or inputs change. Every `arguments[].value` is sent as a string, including booleans and JSON arrays.
 

@@ -71,8 +71,8 @@ function createCommandHarness(status: McpOAuthTokenStatus) {
   let reloads = 0;
   const handler = createRegionCommandHandler(
     "global",
-    "Plugin-Pi-kling-ai",
-    "https://kling.ai/mcp",
+    "kling-ai",
+    "https://kling.ai/mcp/plugin",
     {
       inspectOAuthTokens: () => status,
       persistRegion: (region) => persisted.push(region),
