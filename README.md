@@ -1,94 +1,76 @@
 # Kling AI for Pi
 
-Create and monitor Kling AI images and videos directly from
-[Pi](https://pi.dev), using Kling's browser-based OAuth flow instead of an API
-key. The package includes its own remote MCP connection, Agent Skills, and MCP
-Apps result rendering.
+[简体中文 · 国内区使用指南](https://github.com/klingai-dev/pi-plugin/blob/main/README.zh-CN.md)
 
-## What you get
-
-- Text-to-image, image-to-image, text-to-video, and image-to-video workflows.
-- Dedicated image and video Skills for prompt construction, scene patterns,
-  reference roles, camera motion, multi-shot continuity, and quality checks.
-- Account and credit queries, uploads, task status, motion control, the motion
-  library, and Element creation, inspection, updates, and deletion when the
-  live server exposes them.
-- Global and China Kling accounts, with exactly one region active at a time.
-- Browser OAuth with credentials stored by the operating-system credential
-  store.
-- A confirmation step immediately before every credit-consuming generation.
-- Task polling and MCP Apps result rendering inside Pi when the host supports
-  it.
-
-## Requirements
-
-- [Pi](https://pi.dev) with Node.js 22.19 or newer.
-- A Kling account for the region you choose:
-  [Global](https://kling.ai/) or [China](https://klingai.com/).
-
-No Kling API key is required.
-
-Version 1.0.6 uses the regional `/mcp/plugin` endpoints and requires a new
-OAuth login when upgrading from 1.0.5. See [Upgrade from 1.0.5](#upgrade-from-105).
-On Pi 1.x, this package provides `/mcp`. Pi may disable its built-in MCP
-extension when both would register that command.
+Create images and videos, use reference media and reusable Elements, and track
+your Kling AI tasks from [Pi](https://pi.dev). One Pi package supports both
+Global and China accounts. It includes the remote MCP connection and Agent
+Skills, and uses browser OAuth with your Kling account.
 
 ## Quick start
 
-### 1. Install and start Pi
+### 1. Install the Pi package
+
+You need Pi, Node.js 22.19 or newer, and a Kling account. If you're new to
+Pi, follow the [Pi quickstart](https://docs.pi.dev/latest/quickstart) to install
+it and configure a model provider. Kling authorization happens separately in
+step 3.
+
+If you previously installed this repository as a local Pi package, follow
+[the local package cleanup steps](#a-local-package-is-still-installed) first.
+If you're upgrading from 1.0.5, see [the migration steps](#upgrade-from-105).
+
+Run in your terminal:
 
 ```bash
 pi install npm:kling-ai-pi
 pi
 ```
 
-If you previously installed this repository as a local Pi package, remove that
-source first. `pi list` should show only the npm package, not both an npm entry
-and a local repository path.
-
 ### 2. Choose the account region
 
-Run these commands inside Pi:
+Inside Pi, choose the region for the website where you sign in to Kling.
 
-```text
-/kling-region
-/kling-region global
-```
+| Kling account | Command in Pi | Official guide |
+| --- | --- | --- |
+| Global (`kling.ai`) | `/kling-region global` | [Global MCP & CLI guide](https://kling.ai/app/mcp/guide) |
+| China (`klingai.com`) | `/kling-region china` | [China MCP & CLI guide](https://klingai.com/app/mcp/guide) |
 
-`global` is the default for a new installation. Use `/kling-region china` for
-a China account.
+New installations default to Global. Run `/kling-region` by itself to check
+the active region. If you've already authorized Kling in another region,
+follow [the switching steps](#region-and-account-switching).
 
 ### 3. Authorize Kling AI
 
-Still inside Pi, run:
+In Pi, run `/mcp-auth kling-ai` and complete sign-in and authorization in
+your browser. Back in Pi, run these commands one at a time:
 
 ```text
-/mcp-auth kling-ai
 /mcp reconnect kling-ai
 /mcp
 ```
 
-Complete the Kling sign-in and authorization in the browser. Setup is working
-when `/mcp` shows exactly one `kling-ai` server connected for the
-selected region.
+Look for one connected `kling-ai` server in the status view. The package
+supplies the regional MCP configuration and stores OAuth credentials in the OS
+credential store.
 
 ### 4. Verify without spending credits
 
 Send this prompt in Pi:
 
 ```text
-Check my current Kling account and region. Do not create an image or video and do not call any generation tool.
+Use the Kling AI plugin to check my account and available credits. Use read-only account tools only.
 ```
 
-Account and credit checks are read-only. They do not submit a generation.
+The connection is working when Pi returns your account and credit balance.
 
 ## Create with Kling AI
 
 You can ask naturally. The installed `kling-ai` Skill handles account,
 cross-media, upload, Element, motion-library, and task operations, then routes
 creative work to the dedicated `kling-ai-generate-image` or
-`kling-ai-generate-video` Skill. Every Skill discovers the current remote tool
-schemas before choosing a model or argument.
+`kling-ai-generate-video` Skill. Pi discovers the models and parameters
+available to your account through `who_am_i`.
 
 ### Generate an image
 
@@ -110,10 +92,13 @@ Attach or reference the local image in your Pi task, then ask:
 Animate this image with subtle camera movement for 5 seconds. Preserve the composition, show me the final settings, and wait for my confirmation before submitting.
 ```
 
-Before a billable tool call, Pi should show the final workflow, model, duration
-or resolution, and aspect ratio. Reply with an explicit confirmation only when
-those settings are correct. The package submits at most once for that approved
-request and does not blindly retry an ambiguous or timed-out submission.
+Generation uses paid credits from your personal Kling workspace. These
+prompts ask Pi to show the final settings before submitting. Confirm once
+you've reviewed them. Pi uses the returned `generationId` to check the task
+with `query_tasks` and show the result.
+To check a task later, ask Pi to look up that ID. Save the completed media
+promptly, as the [official guide](https://kling.ai/app/mcp/guide) lists a
+24-hour validity period for result URLs.
 
 For a normal deliverable, the Skills prefer a supported `2k` image model and
 `1080p` video model. They use `4k` when supported for commercial,
@@ -137,21 +122,23 @@ Finish or record any active generation IDs before changing regions. Then run:
 /mcp reconnect kling-ai
 ```
 
-Replace `china` with `global` when switching back. The package never activates
-both endpoints at once. Do not add either endpoint separately to `.mcp.json`.
-The packaged `mcp.global.json` and `mcp.china.json` files are internal templates,
-not user configuration. Do not copy or symlink them; `/kling-region` is the
-only authoritative way to inspect the active region.
+Replace `china` with `global` when switching back. To switch accounts in the
+same region, run the same steps without changing the region. Check the active
+region with `/kling-region`.
+
+Pi loads one packaged `/mcp/plugin` endpoint at a time. Use the bundled
+configuration with Pi. The manual `/mcp` setup in the official guides is for
+other MCP clients that need a server URL.
 
 ## Upgrade from 1.0.5
 
 Version 1.0.5 used `Plugin-Pi-kling-ai` at the parent `/mcp` URL. Version
 1.0.6 changes both the server key and URL to the shared plugin contract.
 Existing OAuth credentials are not transferable between those resource
-identities. Finish or record active task IDs and, while still running 1.0.5,
-use `/mcp logout Plugin-Pi-kling-ai`. Then update the package to 1.0.6, reload Pi, confirm
-`/kling-region`, and run `/mcp-auth kling-ai`. Never register the old and new
-connections together or paste credentials into chat.
+identities. Finish or record active task IDs, then run
+`/mcp logout Plugin-Pi-kling-ai` in Pi while still on 1.0.5. Exit Pi and run
+`pi update npm:kling-ai-pi` in your terminal. Restart Pi, check
+`/kling-region`, and follow [the authorization steps](#3-authorize-kling-ai).
 
 ## Troubleshooting
 
@@ -191,9 +178,14 @@ Inside Pi, run:
 /mcp
 ```
 
-Do not paste Kling tokens, cookies, API keys, or authorization headers into
-chat or configuration files. On a headless machine, follow the adapter's
-redirect-URL paste flow.
+On a headless machine, follow Pi's instructions to open the authorization URL
+in a local browser and enter the callback URL in Pi's OAuth prompt. The
+adapter requires an available OS credential store.
+
+### `/mcp` command conflict on Pi 1.x
+
+This package provides `/mcp`. If both extensions register that command, Pi may
+disable its built-in MCP extension.
 
 ### A submission timed out
 
@@ -203,19 +195,24 @@ cannot be charged twice.
 
 ## Local development
 
-For a local checkout or extracted release archive:
+For a source checkout, install dependencies and run the checks:
 
 ```bash
 cd /absolute/path/to/pi-plugin
-npm install --omit=dev --ignore-scripts
+npm ci
 npm run check
 npm test
+```
+
+To load that checkout in Pi, install it by path:
+
+```bash
 pi install /absolute/path/to/pi-plugin
 ```
 
-Pi loads local packages in place, so the dependency install is required for a
-local directory. npm-published packages install their runtime dependencies
-through Pi's package manager.
+Pi loads local packages in place. For an extracted release archive, run
+`npm install --omit=dev --ignore-scripts` in the extracted directory before
+installing it by path.
 
 ## Distribution
 
